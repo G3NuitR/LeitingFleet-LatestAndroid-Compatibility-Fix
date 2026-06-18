@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Packages LSPosed should offer to scope this module to. -->
+    <string-array name="xposed_scope">
+        <item>com.Leiting.Fleet</item>
+    </string-array>
+</resources>

@@ -1,0 +1,5 @@
+// Root build file. Open this project in Android Studio and let it sync,
+// or build the APK with no Gradle/AGP download via ./build-local.sh
+plugins {
+    id 'com.android.application' version '8.7.2' apply false
+}

@@ -1,0 +1,9 @@
+/build/
+/dist/
+/.gradle/
+/app/build/
+/local.properties
+/debug.keystore
+*.iml
+.idea/
+libs/xposed-api-82.jar
