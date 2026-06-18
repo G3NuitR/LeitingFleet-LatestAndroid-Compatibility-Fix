@@ -146,6 +146,14 @@ build-local.sh                                                  Gradle-free APK 
 settings.gradle / build.gradle / app/build.gradle              Android Studio project
 ```
 
+## Continuous integration
+
+[`.github/workflows/build.yml`](.github/workflows/build.yml) builds the module on every push to
+`main` (and on demand via **Run workflow**) and uploads **two artifacts** — a `debug` and a
+`release` APK — named with **date-based versioning** (`YYYY.MM.DD`, the build date). Grab them
+from the run's **Artifacts** section under the **Actions** tab. The release variant is signed
+with the debug key so it installs without any secret setup.
+
 ## Notes
 
 This is a runtime workaround. The proper fix is on the engine side: the game should be rebuilt

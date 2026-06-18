@@ -2,6 +2,11 @@ plugins {
     id 'com.android.application'
 }
 
+// Date-based versioning (YYYY.MM.DD). CI passes -PappVersionName / -PappVersionCode;
+// local builds fall back to harmless defaults.
+def appVersionName = (project.findProperty('appVersionName') ?: '0.0.0').toString()
+def appVersionCode = (project.findProperty('appVersionCode') ?: '1').toString().toInteger()
+
 android {
     namespace 'com.leiting.fleet.lsposedfix'
     compileSdk 35
@@ -10,13 +15,19 @@ android {
         applicationId 'com.leiting.fleet.lsposedfix'
         minSdk 21
         targetSdk 35
-        versionCode 1
-        versionName '1.0'
+        versionCode appVersionCode
+        versionName appVersionName
     }
 
     buildTypes {
+        debug {
+            versionNameSuffix '-debug'
+        }
         release {
             minifyEnabled false
+            // Sign release with the debug key so the artifact installs with zero secret
+            // setup. Replace with a real keystore-backed signingConfig when distributing.
+            signingConfig signingConfigs.debug
         }
     }
 
