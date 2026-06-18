@@ -3,11 +3,12 @@ name: Build module APKs
 on:
   push:
     branches: [ main ]
+    tags: [ 'v*' ]
   pull_request:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write   # needed to publish a Release on tag builds
 
 concurrency:
   group: build-${{ github.ref }}
@@ -23,8 +24,15 @@ jobs:
       - name: Compute date-based version (YYYY.MM.DD)
         id: ver
         run: |
-          echo "name=$(date -u +'%Y.%m.%d')" >> "$GITHUB_OUTPUT"
-          echo "code=$(date -u +'%Y%m%d')"   >> "$GITHUB_OUTPUT"
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            VNAME="${GITHUB_REF_NAME#v}"     # tag v2026.06.18 -> 2026.06.18
+          else
+            VNAME="$(date -u +'%Y.%m.%d')"   # untagged build -> build date
+          fi
+          VCODE="$(printf '%s' "$VNAME" | tr -cd '0-9')"   # 2026.06.18 -> 20260618
+          echo "name=$VNAME" >> "$GITHUB_OUTPUT"
+          echo "code=$VCODE" >> "$GITHUB_OUTPUT"
+          echo "Resolved version: $VNAME (code $VCODE)"
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -62,16 +70,26 @@ jobs:
           cp "$RELEASE_APK" "out/FleetServiceConnectionFix-${{ steps.ver.outputs.name }}-release.apk"
           ls -l out
 
-      - name: Upload debug APK
+      - name: Upload debug APK (run artifact)
         uses: actions/upload-artifact@v4
         with:
           name: FleetServiceConnectionFix-${{ steps.ver.outputs.name }}-debug
           path: out/*-debug.apk
           if-no-files-found: error
 
-      - name: Upload release APK
+      - name: Upload release APK (run artifact)
         uses: actions/upload-artifact@v4
         with:
           name: FleetServiceConnectionFix-${{ steps.ver.outputs.name }}-release
           path: out/*-release.apk
           if-no-files-found: error
+
+      - name: Publish GitHub Release (on version tag)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ steps.ver.outputs.name }}
+          files: out/*.apk
+          fail_on_unmatched_files: true
+          generate_release_notes: true

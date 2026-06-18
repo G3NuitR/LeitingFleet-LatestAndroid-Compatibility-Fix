@@ -154,6 +154,14 @@ settings.gradle / build.gradle / app/build.gradle              Android Studio pr
 from the run's **Artifacts** section under the **Actions** tab. The release variant is signed
 with the debug key so it installs without any secret setup.
 
+**Published releases:** pushing a date tag (`v2026.06.18`) builds at that version and publishes
+a permanent **GitHub Release** with both APKs attached — see the **Releases** page. Run
+artifacts expire after 90 days; release assets do not.
+
+```bash
+git tag v$(date -u +'%Y.%m.%d') && git push origin --tags
+```
+
 ## Notes
 
 This is a runtime workaround. The proper fix is on the engine side: the game should be rebuilt
