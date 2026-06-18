@@ -15,6 +15,31 @@ java.lang.NoSuchMethodError: public default void
     at android.app.LoadedApk$ServiceDispatcher.doConnected(LoadedApk.java:2420)
 ```
 
+## Why this repo exists
+
+A fully up-to-date, **genuine** Pixel 8 Pro (stock `google/husky` build `CP1A.260505.005`,
+Android 16, security patch 2026-05-05) began crashing `com.Leiting.Fleet` **every launch**,
+right after login. The obvious suspect was the device being rooted (SukiSU) or otherwise
+non-standard — but on-device investigation proved the opposite:
+
+- The framework is **stock and untampered** (`release-keys`); **no** Xposed / framework-hooking
+  modules are installed.
+- `android.app.IBinderSession` and the 3-arg `onServiceConnected` genuinely live in the shipped
+  `framework.jar` / `services.jar` — they are a real **Android 16 QPR (API 36.1)** addition, not
+  a mod.
+- The game targets **SDK 30** yet still hits the new code path, so the change is **not** gated on
+  `targetSdkVersion`: any older-Unity title that binds a service crashes on this OS revision.
+
+So the problem is a **compatibility regression**: a change that *looks* backward-compatible
+(adding a `default` method to a public interface) silently breaks apps that implement
+`ServiceConnection` through a dynamic `java.lang.reflect.Proxy` — exactly what Unity's engine
+does. The game can't be patched from the outside, and the OS can't be rolled back on a
+fully-updated phone.
+
+**What this repo solves:** it packages a small **LSPosed module** that neutralizes the regression
+at runtime so the game launches normally again, without modifying the game or the system image.
+Verified working on the device above.
+
 ## Root cause
 
 Android 16 QPR added a new **`default`** method to the public `android.content.ServiceConnection`
